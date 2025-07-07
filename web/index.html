@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Language Cards</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .invalid {
+            border: 1px solid #dc3545 !important;
+        }
+        .image-selection, .audio-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 10px;
+        }
+        .image-container {
+            width: 300px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .selected-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .audio-container {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .audio-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        .audio-option:hover {
+            background-color: #e9ecef;
+        }
+        .audio-option.selected {
+            background-color: #e7f1ff;
+            border-left: 4px solid #0d6efd;
+        }
+        .audio-controls {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        .audio-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .selection-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid form-container">
+        <h1 class="text-center mb-4">Add language cards</h1>
+        <form id="cardForm">
+            <div class="mb-3">
+                <label for="wordInput" class="form-label">Word or phrase</label>
+                <input type="text" class="form-control" id="wordInput" required>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" id="translateBtn" class="btn btn-primary">Translate</button>
+            </div>
+
+            <div class="mb-3">
+                <label for="translationInput" class="form-label">Translation</label>
+                <textarea class="form-control" id="translationInput" rows="2" disabled></textarea>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" id="searchImageBtn" class="btn btn-primary" disabled>Search image</button>
+                <div id="imageSelection" class="image-selection d-none">
+                    <button type="button" class="nav-btn btn btn-outline-secondary" id="prevImageBtn">&lt;</button>
+                    <div class="image-container">
+                        <img id="selectedImage" class="selected-image" src="" alt="Selected image" style="display: none;">
+                    </div>
+                    <button type="button" class="nav-btn btn btn-outline-secondary" id="nextImageBtn">&gt;</button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" id="preparePronunciationBtn" class="btn btn-primary" disabled>Prepare pronunciation</button>
+                <div id="audioSelection" class="mt-3 d-none">
+                    <div class="selection-title">Available pronunciations:</div>
+                    <div class="audio-container" id="audioOptionsContainer"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" id="generateAnswersBtn" class="btn btn-primary" disabled>Generate answers</button>
+            </div>
+
+            <div class="mb-3">
+                <label for="suggestedOptions" class="form-label">Suggested options</label>
+                <textarea class="form-control" id="suggestedOptions" rows="4" disabled></textarea>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" id="addCardsBtn" class="btn btn-success" disabled>Add cards</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Success</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Card added successfully!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="againBtn" class="btn btn-primary">Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Configuration object for easy modification
+            const config = {
+                endpoints: {
+                    translate: '/api/translate',
+                    searchImage: '/api/search-image',
+                    preparePronunciation: '/api/prepare-pronunciation',
+                    generateAnswers: '/api/generate-answers',
+                    addCards: '/api/add-card'
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any additional headers here
+                }
+            };
+
+            // DOM elements
+            const elements = {
+                wordInput: $('#wordInput'),
+                translateBtn: $('#translateBtn'),
+                translationInput: $('#translationInput'),
+                searchImageBtn: $('#searchImageBtn'),
+                imageSelection: $('#imageSelection'),
+                selectedImage: $('#selectedImage'),
+                prevImageBtn: $('#prevImageBtn'),
+                nextImageBtn: $('#nextImageBtn'),
+                preparePronunciationBtn: $('#preparePronunciationBtn'),
+                audioSelection: $('#audioSelection'),
+                audioOptionsContainer: $('#audioOptionsContainer'),
+                generateAnswersBtn: $('#generateAnswersBtn'),
+                suggestedOptions: $('#suggestedOptions'),
+                addCardsBtn: $('#addCardsBtn'),
+                successModal: new bootstrap.Modal('#successModal'),
+                againBtn: $('#againBtn')
+            };
+
+            // State management
+            const state = {
+                images: [],
+                currentImageIndex: -1,
+                audioOptions: [],
+                selectedAudio: null,
+                isFormValid: false
+            };
+
+            // Form validation
+            function validateForm() {
+                const word = elements.wordInput.val().trim();
+                const translation = elements.translationInput.val().trim();
+                const options = elements.suggestedOptions.val().trim();
+
+                const isValid = word && translation && state.currentImageIndex >= 0 && state.selectedAudio && options;
+                state.isFormValid = isValid;
+                elements.addCardsBtn.prop('disabled', !isValid);
+            }
+
+            // Highlight invalid fields
+            function highlightInvalidFields() {
+                if (!elements.wordInput.val().trim()) {
+                    elements.wordInput.addClass('invalid');
+                }
+                if (!elements.translationInput.val().trim()) {
+                    elements.translationInput.addClass('invalid');
+                }
+                if (state.currentImageIndex < 0) {
+                    elements.imageSelection.addClass('invalid');
+                }
+                if (!state.selectedAudio) {
+                    elements.audioSelection.addClass('invalid');
+                }
+                if (!elements.suggestedOptions.val().trim()) {
+                    elements.suggestedOptions.addClass('invalid');
+                }
+            }
+
+            // Remove highlight when field is filled
+            elements.wordInput.on('input', function() {
+                if ($(this).val().trim()) {
+                    $(this).removeClass('invalid');
+                }
+            });
+
+            elements.translationInput.on('input', function() {
+                if ($(this).val().trim()) {
+                    $(this).removeClass('invalid');
+                }
+            });
+
+            // Image navigation
+            function showImage(index) {
+                if (state.images.length === 0 || index < 0 || index >= state.images.length) {
+                    elements.selectedImage.hide();
+                    return;
+                }
+
+                state.currentImageIndex = index;
+                elements.selectedImage.attr('src', state.images[index].url).show();
+                validateForm();
+            }
+
+            elements.prevImageBtn.on('click', function() {
+                if (state.images.length === 0) return;
+                const newIndex = (state.currentImageIndex - 1 + state.images.length) % state.images.length;
+                showImage(newIndex);
+            });
+
+            elements.nextImageBtn.on('click', function() {
+                if (state.images.length === 0) return;
+                const newIndex = (state.currentImageIndex + 1) % state.images.length;
+                showImage(newIndex);
+            });
+
+            // Audio selection
+            function createAudioOption(audio, index) {
+                const audioId = `audioOption${index}`;
+                const audioElement = $(`
+                    <div class="audio-option" data-audio-url="${audio.url}">
+                        <input type="radio" name="audioOptions" id="${audioId}" value="${audio.url}" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0d6efd" viewBox="0 0 16 16">
+                            <path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/>
+                            <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/>
+                            <path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+                        </svg>
+                        <div class="audio-controls">
+                            <audio controls src="${audio.url}" style="width: 100%;"></audio>
+                            <div class="audio-info">Option ${index + 1} • ${audio.duration || '00:00'}</div>
+                        </div>
+                    </div>
+                `);
+
+                audioElement.on('click', function() {
+                    $('.audio-option').removeClass('selected');
+                    $(this).addClass('selected');
+                    state.selectedAudio = audio.url;
+                    elements.generateAnswersBtn.prop('disabled', false);
+                    validateForm();
+                });
+
+                // Auto-select the first audio option
+                if (index === 0) {
+                    audioElement.addClass('selected');
+                    state.selectedAudio = audio.url;
+                    elements.generateAnswersBtn.prop('disabled', false);
+                }
+
+                return audioElement;
+            }
+
+            // API service
+            const apiService = {
+                async post(endpoint, data) {
+                    try {
+                        const response = await $.ajax({
+                            url: endpoint,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers: config.headers
+                        });
+                        return response;
+                    } catch (error) {
+                        console.error('API error:', error);
+                        throw error;
+                    }
+                },
+
+                async translate(text) {
+				    return "translation sample";
+                    //return this.post(config.endpoints.translate, { text });
+                },
+
+                async searchImages(text) {
+				    return [
+						{ url: "https://t3.ftcdn.net/jpg/06/16/17/86/240_F_616178679_Jjyp5j2YU7gEg2GZo3vrlg9DFsU8h6WZ.jpg" },
+						{ url: "https://t3.ftcdn.net/jpg/04/20/92/50/240_F_420925069_hYp9uK9wu8zvYUmcJI6tyBWIzPPcHR5o.jpg" },
+						{ url: "https://t3.ftcdn.net/jpg/03/70/85/22/240_F_370852280_YPEeLE8ijPtyNiLl7a8rYzdME3cOL3ck.jpg" }
+					];
+                    //return this.post(config.endpoints.searchImage, { text });
+                },
+
+                async preparePronunciation(text) {
+				    return [{ url: "sample.mp3" }, { url: "sample.wav" }]
+                    //return this.post(config.endpoints.preparePronunciation, { text });
+                },
+
+                async generateAnswers(text) {
+				    return ["1", "2", "3"];
+                    //return this.post(config.endpoints.generateAnswers, { text });
+                },
+
+                async addCards(data) {
+                    return this.post(config.endpoints.addCards, data);
+                }
+            };
+
+            // Translate button
+            elements.translateBtn.on('click', async function() {
+                const word = elements.wordInput.val().trim();
+                if (!word) {
+                    elements.wordInput.addClass('invalid');
+                    return;
+                }
+
+                try {
+                    const translation = await apiService.translate(word);
+                    elements.translationInput.val(translation).prop('disabled', false);
+                    elements.searchImageBtn.prop('disabled', false);
+                    elements.preparePronunciationBtn.prop('disabled', false);
+                    validateForm();
+                } catch (error) {
+                    alert('Translation failed. Please try again.');
+                }
+            });
+
+            // Search image button
+            elements.searchImageBtn.on('click', async function() {
+                const word = elements.wordInput.val().trim();
+                if (!word) {
+                    elements.wordInput.addClass('invalid');
+                    elements.searchImageBtn.prop('disabled', true);
+                    return;
+                }
+
+                try {
+                    const images = await apiService.searchImages(word);
+                    state.images = images;
+                    state.currentImageIndex = -1;
+
+                    if (images.length > 0) {
+                        elements.imageSelection.removeClass('d-none');
+                        showImage(0);
+                    } else {
+                        alert('No images found for this word.');
+                    }
+                } catch (error) {
+                    alert('Image search failed. Please try again.');
+                }
+            });
+
+            // Prepare pronunciation button
+            elements.preparePronunciationBtn.on('click', async function() {
+                const word = elements.wordInput.val().trim();
+                if (!word) {
+                    elements.wordInput.addClass('invalid');
+                    elements.preparePronunciationBtn.prop('disabled', true);
+                    return;
+                }
+
+                try {
+                    const audioFiles = await apiService.preparePronunciation(word);
+                    state.audioOptions = audioFiles;
+                    elements.audioOptionsContainer.empty();
+
+                    if (audioFiles.length > 0) {
+                        elements.audioSelection.removeClass('d-none');
+                        audioFiles.forEach((audio, index) => {
+                            elements.audioOptionsContainer.append(createAudioOption(audio, index));
+                        });
+                        validateForm();
+                    } else {
+                        alert('No pronunciation options found for this word.');
+                    }
+                } catch (error) {
+                    alert('Pronunciation preparation failed. Please try again.');
+                }
+            });
+
+            // Generate answers button
+            elements.generateAnswersBtn.on('click', async function() {
+                const word = elements.wordInput.val().trim();
+                if (!word) {
+                    elements.wordInput.addClass('invalid');
+                    return;
+                }
+
+                try {
+                    const answers = await apiService.generateAnswers(word);
+                    elements.suggestedOptions.val(answers.join('\n')).prop('disabled', false);
+                    validateForm();
+                } catch (error) {
+                    alert('Answer generation failed. Please try again.');
+                }
+            });
+
+            // Add cards button
+            elements.addCardsBtn.on('click', async function() {
+                if (!state.isFormValid) {
+                    highlightInvalidFields();
+                    return;
+                }
+
+                const cardData = {
+                    word: elements.wordInput.val().trim(),
+                    translation: elements.translationInput.val().trim(),
+                    imageUrl: state.images[state.currentImageIndex].url,
+                    audioUrl: state.selectedAudio,
+                    options: elements.suggestedOptions.val().trim().split('\n')
+                };
+
+                try {
+                    await apiService.addCards(cardData);
+                    elements.successModal.show();
+                } catch (error) {
+                    alert('Failed to add cards. Please try again.');
+                }
+            });
+
+            // Again button
+            elements.againBtn.on('click', function() {
+                // Reset form
+                elements.wordInput.val('').removeClass('invalid');
+                elements.translationInput.val('').prop('disabled', true).removeClass('invalid');
+                elements.imageSelection.addClass('d-none');
+                elements.selectedImage.hide();
+                elements.audioSelection.addClass('d-none');
+                elements.audioOptionsContainer.empty();
+                elements.suggestedOptions.val('').prop('disabled', true).removeClass('invalid');
+
+                // Reset buttons
+                elements.searchImageBtn.prop('disabled', true);
+                elements.preparePronunciationBtn.prop('disabled', true);
+                elements.generateAnswersBtn.prop('disabled', true);
+                elements.addCardsBtn.prop('disabled', true);
+
+                // Reset state
+                state.images = [];
+                state.currentImageIndex = -1;
+                state.audioOptions = [];
+                state.selectedAudio = null;
+                state.isFormValid = false;
+
+                // Hide modal
+                elements.successModal.hide();
+            });
+        });
+    </script>
+</body>
+</html>

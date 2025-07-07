@@ -1,0 +1,6 @@
+POST localhost:8000/search_image
+Content-Type: application/json
+
+{
+  "query": "a la derecha"
+}

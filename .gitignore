@@ -1,0 +1,5 @@
+.venv
+.idea
+.google_api_key
+.search_engine_id
+credentials.json

@@ -1,0 +1,8 @@
+POST localhost:8000/translate
+Content-Type: application/json
+
+{
+  "src": "es",
+  "dest": "ru",
+  "input": "mesa"
+}

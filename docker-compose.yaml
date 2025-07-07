@@ -1,0 +1,248 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL database with initialization
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123456}
+      POSTGRES_USER: ${DB_USER:-store}
+      POSTGRES_DB: ${DB_NAME:-storagedb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql/initdb:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U store -d storagedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Storage service (Python app)
+  storage:
+    build:
+      context: ./storage-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_USER: ${DB_USER:-store}
+      DB_PASSWORD: ${DB_PASSWORD:-test123456}
+      DB_NAME: ${DB_NAME:-storagedb}
+      STORAGE_PORT: ${STORAGE_PORT:-8000}
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${STORAGE_PORT:-8000}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # 3. Translation service (Python app)
+  translate-service:
+    build:
+      context: ./translate-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TRANSLATE_SERVICE_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TRANSLATE_SERVICE_PORT:-8003}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # 4. Google Drive service (Python app)
+  google-drive-service:
+    build:
+      context: ./google-drive-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GOOGLE_DRIVE_SERVICE_PORT: ${GOOGLE_DRIVE_SERVICE_PORT:-8004}
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${GOOGLE_DRIVE_SERVICE_PORT:-8004}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # 5. Google Drive service (Python app)
+  image-search-service:
+    build:
+      context: ./image-search-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      IMAGE_SEARCH_SERVICE_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${GOOGLE_DRIVE_SERVICE_PORT:-8005}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # 6. Audio service (Python app)
+  audio-service:
+    build:
+      context: ./audio-service
+    environment:
+      APP_PORT: ${AUDIO_SERVICE_PORT:-8002}
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${AUDIO_SERVICE_PORT:-8002}/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s  # Longer startup for GPU services
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  # 7. LLM service (Python app)
+  llm-service:
+    build:
+      context: ./llm-service
+    environment:
+      LLM_SERVICE_PORT: ${LLM_SERVICE_PORT:-8006}
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${LLM_SERVICE_PORT:-8006}/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s  # Longer startup for GPU services
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  # 8. Image generation service (Python app)
+  image-service:
+    build:
+      context: ./image-service
+    environment:
+      IMAGE_SERVICE_PORT: ${IMAGE_SERVICE_PORT:-8007}
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${IMAGE_SERVICE_PORT:-8007}/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s  # Longer startup for GPU services
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  # 4. File service (Python app)
+  file_service:
+    build:
+      context: ./file_service
+    environment:
+      FILE_STORAGE_PATH: ${FILE_STORAGE_PATH:-/app/storage}
+      FILE_SERVICE_PORT: ${FILE_SERVICE_PORT:-8001}
+      APP_ENV: ${APP_ENV:-production}
+    volumes:
+      - file_storage:/app/storage
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${FILE_SERVICE_PORT:-8001}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # 3. Nginx service
+  nginx:
+    image: nginx:latest
+    depends_on:
+      storage:
+        condition: service_healthy
+      file_service:
+        condition: service_healthy
+    environment:
+      NGINX_HOST: ${NGINX_HOST:-localhost}
+      NGINX_PORT: ${NGINX_PORT:-80}
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./index.html:/var/www/html/index.html
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${POSTGRES_DATA_DIR:-./postgres_data}
+  file_storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${FILE_STORAGE_DIR:-./file_storage}
+
+networks:
+  backend:
+    internal: true
+  frontend:
