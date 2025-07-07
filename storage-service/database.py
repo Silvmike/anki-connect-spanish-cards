@@ -1,26 +1,18 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from datetime import datetime
-from database import Base
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from config import settings
 
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
-class File(Base):
-    __tablename__ = "files"
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    file_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    inserted_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+Base = declarative_base()
 
-
-class Phrase(Base):
-    __tablename__ = "phrases"
-
-    id = Column(Integer, primary_key=True, index=True)
-    text_value = Column(String(255), nullable=False)
-
-
-class Card(Base):
-    __tablename__ = "cards"
-
-    id = Column(Integer, primary_key=True, index=True)
-    phrase_id = Column(Integer, ForeignKey("phrases.id"), nullable=False)
-    clob_value = Column(Text, nullable=False)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -186,42 +186,30 @@ services:
               count: 1
               capabilities: [ gpu ]
 
-  # 4. File service (Python app)
-  file_service:
-    build:
-      context: ./file_service
-    environment:
-      FILE_STORAGE_PATH: ${FILE_STORAGE_PATH:-/app/storage}
-      FILE_SERVICE_PORT: ${FILE_SERVICE_PORT:-8001}
-      APP_ENV: ${APP_ENV:-production}
-    volumes:
-      - file_storage:/app/storage
-    restart: unless-stopped
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${FILE_SERVICE_PORT:-8001}/health"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-
   # 3. Nginx service
   nginx:
     image: nginx:latest
     depends_on:
       storage:
         condition: service_healthy
-      file_service:
+      image-search-service:
+        condition: service_healthy
+      llm-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      audio-service:
+        condition: service_healthy
+      translate-service:
         condition: service_healthy
     environment:
       NGINX_HOST: ${NGINX_HOST:-localhost}
-      NGINX_PORT: ${NGINX_PORT:-80}
+      NGINX_PORT: ${NGINX_PORT:-8080}
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./index.html:/var/www/html/index.html
     ports:
-      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_PORT:-8080}:8080"
     restart: unless-stopped
     networks:
       - backend
