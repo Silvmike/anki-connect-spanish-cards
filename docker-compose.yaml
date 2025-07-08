@@ -3,6 +3,10 @@ version: '3.8'
 services:
   # 1. PostgreSQL database with initialization
   postgres:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     image: postgres:latest
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-test123456}
@@ -21,6 +25,10 @@ services:
 
   # 2. Storage service (Python app)
   storage:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./storage-service
     depends_on:
@@ -44,6 +52,10 @@ services:
 
   # 3. Translation service (Python app)
   translate-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./translate-service
     depends_on:
@@ -63,6 +75,10 @@ services:
 
   # 4. Google Drive service (Python app)
   google-drive-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./google-drive-service
     depends_on:
@@ -82,6 +98,10 @@ services:
 
   # 5. Google Drive service (Python app)
   image-search-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./image-search-service
     depends_on:
@@ -101,6 +121,10 @@ services:
 
   # 6. Audio service (Python app)
   audio-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./audio-service
     environment:
@@ -130,6 +154,10 @@ services:
 
   # 7. LLM service (Python app)
   llm-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     build:
       context: ./llm-service
     environment:
@@ -159,6 +187,10 @@ services:
 
   # 3. Nginx service
   nginx:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
     image: nginx:latest
     depends_on:
       storage:

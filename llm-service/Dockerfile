@@ -7,6 +7,9 @@ RUN pip install https://github.com/Dao-AILab/flash-attention/releases/download/v
 RUN pip install --no-cache-dir uvicorn fastapi pydantic
 RUN pip install --no-cache-dir accelerate[torch]
 
+ADD download_model.py download_model.py
+RUN python3 download_model.py
+
 WORKDIR /app
 COPY . .
 

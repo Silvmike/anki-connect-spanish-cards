@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
-from . import models, schemas, crud
-from .database import SessionLocal, engine
+import models
+import schemas
+import crud
+from database import SessionLocal, engine
 import uvicorn
 import os
 import asyncio

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
+import models
+import schemas
 
 # File CRUD operations
 def get_file(db: Session, file_id: int):
