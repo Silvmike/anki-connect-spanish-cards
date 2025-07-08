@@ -157,35 +157,6 @@ services:
               count: 1
               capabilities: [ gpu ]
 
-  # 8. Image generation service (Python app)
-  image-service:
-    build:
-      context: ./image-service
-    environment:
-      IMAGE_SERVICE_PORT: ${IMAGE_SERVICE_PORT:-8007}
-    devices:
-      - /dev/dri:/dev/dri
-      - /dev/nvidia0:/dev/nvidia0
-      - /dev/nvidiactl:/dev/nvidiactl
-      - /dev/nvidia-uvm:/dev/nvidia-uvm
-    runtime: nvidia
-    restart: unless-stopped
-    networks:
-      - backend
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:${IMAGE_SERVICE_PORT:-8007}/health" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-      start_period: 20s  # Longer startup for GPU services
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [ gpu ]
-
   # 3. Nginx service
   nginx:
     image: nginx:latest
