@@ -11,7 +11,13 @@ from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 import uvicorn
 
+APP_PORT = int(os.getenv("APP_PORT", default="8000"))
+
 app = FastAPI()
+
+@app.get("/health")
+def get_health():
+    return "OK"
 
 # Configuration
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -181,4 +187,4 @@ async def download_file(
         raise HTTPException(status_code=500, detail=f'Server error: {str(e)}')
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=APP_PORT)

@@ -2,6 +2,7 @@ import requests
 from fastapi import FastAPI, Query, Response
 from pydantic import BaseModel
 import uvicorn
+import os
 
 with open('.google_api_key', 'r') as file:
     API_KEY = file.read()
@@ -10,6 +11,8 @@ with open('.search_engine_id', 'r') as file:
     SEARCH_ENGINE_ID = file.read()
 
 URL = "https://www.googleapis.com/customsearch/v1"
+
+APP_PORT = int(os.getenv("APP_PORT", default="8000"))
 
 app = FastAPI()
 
@@ -53,4 +56,4 @@ def get_health():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=APP_PORT)

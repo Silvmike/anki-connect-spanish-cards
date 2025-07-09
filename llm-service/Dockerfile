@@ -10,6 +10,10 @@ RUN pip install --no-cache-dir accelerate[torch]
 ADD download_model.py download_model.py
 RUN python3 download_model.py
 
+RUN apt-get update -y && \
+    apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
 

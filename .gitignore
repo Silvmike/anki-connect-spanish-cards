@@ -4,3 +4,5 @@
 .search_engine_id
 credentials.json
 token.json
+_files/
+_postgres_data/

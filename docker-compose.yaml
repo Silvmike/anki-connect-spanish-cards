@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. PostgreSQL database with initialization
   postgres:
@@ -18,10 +16,11 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U store -d storagedb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-store} -d ${DB_NAME:-storagedb}"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   # 2. Storage service (Python app)
   storage:
@@ -35,11 +34,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DB_HOST: postgres
-      DB_USER: ${DB_USER:-store}
-      DB_PASSWORD: ${DB_PASSWORD:-test123456}
-      DB_NAME: ${DB_NAME:-storagedb}
-      STORAGE_PORT: ${STORAGE_PORT:-8000}
+      DATABASE_URL: postgresql://${DB_USER:-store}:${DB_PASSWORD:-test123456}@postgres:5432/${DB_NAME:-storagedb}
+      APP_PORT: ${STORAGE_PORT:-8000}
     restart: unless-stopped
     networks:
       - backend
@@ -48,7 +44,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-      start_period: 10s
+      start_period: 20s
 
   # 3. Translation service (Python app)
   translate-service:
@@ -62,7 +58,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      TRANSLATE_SERVICE_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
+      APP_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
     restart: unless-stopped
     networks:
       - backend
@@ -85,7 +81,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      GOOGLE_DRIVE_SERVICE_PORT: ${GOOGLE_DRIVE_SERVICE_PORT:-8004}
+      APP_PORT: ${GOOGLE_DRIVE_SERVICE_PORT:-8004}
     restart: unless-stopped
     networks:
       - backend
@@ -108,16 +104,16 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      IMAGE_SEARCH_SERVICE_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+      APP_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
     restart: unless-stopped
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${GOOGLE_DRIVE_SERVICE_PORT:-8005}/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${IMAGE_SEARCH_SERVICE_PORT:-8005}/health"]
       interval: 10s
       timeout: 3s
       retries: 3
-      start_period: 10s
+      start_period: 30s
 
   # 6. Audio service (Python app)
   audio-service:
@@ -142,8 +138,8 @@ services:
       test: [ "CMD", "curl", "-f", "http://localhost:${AUDIO_SERVICE_PORT:-8002}/health" ]
       interval: 10s
       timeout: 3s
-      retries: 3
-      start_period: 20s  # Longer startup for GPU services
+      retries: 5
+      start_period: 30s  # Longer startup for GPU services
     deploy:
       resources:
         reservations:
@@ -161,7 +157,7 @@ services:
     build:
       context: ./llm-service
     environment:
-      LLM_SERVICE_PORT: ${LLM_SERVICE_PORT:-8006}
+      APP_PORT: ${LLM_SERVICE_PORT:-8006}
     devices:
       - /dev/dri:/dev/dri
       - /dev/nvidia0:/dev/nvidia0
@@ -175,8 +171,8 @@ services:
       test: [ "CMD", "curl", "-f", "http://localhost:${LLM_SERVICE_PORT:-8006}/health" ]
       interval: 10s
       timeout: 3s
-      retries: 3
-      start_period: 20s  # Longer startup for GPU services
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         reservations:
@@ -191,7 +187,11 @@ services:
       - 8.8.8.8
       - 4.4.4.4
       - ${LOCAL_DNS}
-    image: nginx:latest
+    build:
+      context: ./web
+      args:
+        AUTH_USERNAME: ${NGINX_USER_NAME}
+        AUTH_PASSWORD: ${NGINX_PASSWORD}
     depends_on:
       storage:
         condition: service_healthy
@@ -207,12 +207,9 @@ services:
         condition: service_healthy
     environment:
       NGINX_HOST: ${NGINX_HOST:-localhost}
-      NGINX_PORT: ${NGINX_PORT:-8080}
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./index.html:/var/www/html/index.html
+      NGINX_PORT: ${NGINX_PORT:-8443}
     ports:
-      - "${NGINX_PORT:-8080}:8080"
+      - "${NGINX_PORT:-8443}:${NGINX_PORT:-8443}"
     restart: unless-stopped
     networks:
       - backend
