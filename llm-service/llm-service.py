@@ -59,7 +59,7 @@ class ParaphraseRequest(BaseModel):
 class ParaphraseResponse(BaseModel):
     output: List[str]
 
-@app.post("/paraphrase")
+@app.post("/generate-answers")
 def post_sample(request: ParaphraseRequest):
     result = generate_same_length_word(request.input)
     return ParaphraseResponse(output=result)

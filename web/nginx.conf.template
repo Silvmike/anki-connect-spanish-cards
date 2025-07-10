@@ -61,6 +61,7 @@ http {
         }
 
         location = /api/generate-answers {
+            rewrite /api/(.*) /$1 break;
             limit_req zone=all_services burst=5 nodelay;
             proxy_pass http://llm-service:${LLM_SERVICE_PORT};
         }

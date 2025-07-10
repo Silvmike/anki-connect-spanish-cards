@@ -335,8 +335,7 @@
                 },
 
                 async generateAnswers(text) {
-				    return ["1", "2", "3"];
-                    //return this.post(config.endpoints.generateAnswers, { text });
+                    return this.post(config.endpoints.generateAnswers, { input: text });
                 },
 
                 async addCards(data) {
@@ -429,7 +428,7 @@
 
                 try {
                     const answers = await apiService.generateAnswers(word);
-                    elements.suggestedOptions.val(answers.join('\n')).prop('disabled', false);
+                    elements.suggestedOptions.val(answers.output.join('\n')).prop('disabled', false);
                     validateForm();
                 } catch (error) {
                     alert('Answer generation failed. Please try again.');
