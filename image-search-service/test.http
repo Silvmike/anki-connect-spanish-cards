@@ -1,4 +1,4 @@
-POST localhost:8000/search_image
+POST localhost:8000/image-search
 Content-Type: application/json
 
 {

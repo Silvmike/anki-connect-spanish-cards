@@ -39,6 +39,7 @@ http {
 
         # Проксирование на различные сервисы с rate limiting
         location = /api/image-search {
+            rewrite /api/(.*) /$1 break;
             limit_req zone=all_services burst=5 nodelay;
             proxy_pass http://image-search-service:${IMAGE_SEARCH_SERVICE_PORT};
         }

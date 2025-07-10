@@ -61,6 +61,7 @@ services:
       APP_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
     restart: unless-stopped
     networks:
+      - default
       - backend
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${TRANSLATE_SERVICE_PORT:-8003}/health"]
@@ -84,6 +85,7 @@ services:
       APP_PORT: ${GOOGLE_DRIVE_SERVICE_PORT:-8004}
     restart: unless-stopped
     networks:
+      - default
       - backend
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${GOOGLE_DRIVE_SERVICE_PORT:-8004}/health"]
@@ -105,8 +107,10 @@ services:
         condition: service_healthy
     environment:
       APP_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+      IMAGE_SEARCH_MAX_RESULTS: ${IMAGE_SEARCH_MAX_RESULTS:-3}
     restart: unless-stopped
     networks:
+      - default
       - backend
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${IMAGE_SEARCH_SERVICE_PORT:-8005}/health"]
@@ -208,6 +212,10 @@ services:
     environment:
       NGINX_HOST: ${NGINX_HOST:-localhost}
       NGINX_PORT: ${NGINX_PORT:-8443}
+      IMAGE_SEARCH_SERVICE_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+      TRANSLATE_SERVICE_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
+      AUDIO_SERVICE_PORT: ${AUDIO_SERVICE_PORT:-8002}
+      LLM_SERVICE_PORT: ${LLM_SERVICE_PORT:-8006}
     ports:
       - "${NGINX_PORT:-8443}:${NGINX_PORT:-8443}"
     restart: unless-stopped
