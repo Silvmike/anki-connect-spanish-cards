@@ -161,7 +161,7 @@
             const config = {
                 endpoints: {
                     translate: '/api/translate',
-                    searchImage: '/api/search-image',
+                    searchImage: '/api/image-search',
                     preparePronunciation: '/api/prepare-pronunciation',
                     generateAnswers: '/api/generate-answers',
                     addCards: '/api/add-card'
@@ -322,17 +322,11 @@
                 },
 
                 async translate(text) {
-				    return "translation sample";
-                    //return this.post(config.endpoints.translate, { text });
+                    return this.post(config.endpoints.translate, { input: text });
                 },
 
                 async searchImages(text) {
-				    return [
-						{ url: "https://t3.ftcdn.net/jpg/06/16/17/86/240_F_616178679_Jjyp5j2YU7gEg2GZo3vrlg9DFsU8h6WZ.jpg" },
-						{ url: "https://t3.ftcdn.net/jpg/04/20/92/50/240_F_420925069_hYp9uK9wu8zvYUmcJI6tyBWIzPPcHR5o.jpg" },
-						{ url: "https://t3.ftcdn.net/jpg/03/70/85/22/240_F_370852280_YPEeLE8ijPtyNiLl7a8rYzdME3cOL3ck.jpg" }
-					];
-                    //return this.post(config.endpoints.searchImage, { text });
+                    return this.post(config.endpoints.searchImage, { query: text });
                 },
 
                 async preparePronunciation(text) {
@@ -360,7 +354,10 @@
 
                 try {
                     const translation = await apiService.translate(word);
-                    elements.translationInput.val(translation).prop('disabled', false);
+                    elements.translationInput.val(
+                        "Translation: " + translation.text +
+                        "\nPronunciation: " + translation.pronunciation
+                    ).prop('disabled', false);
                     elements.searchImageBtn.prop('disabled', false);
                     elements.preparePronunciationBtn.prop('disabled', false);
                     validateForm();
