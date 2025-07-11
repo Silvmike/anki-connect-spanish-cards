@@ -51,8 +51,15 @@ http {
         }
 
         location = /api/prepare-pronunciation {
+            rewrite /api/prepare-pronunciation /generate-audio break;
             limit_req zone=all_services burst=5 nodelay;
-            proxy_pass http://audio-service:${AUDIO_SERVICE_PORT}/generate;
+            proxy_pass http://audio-service-orchestrator:${AUDIO_SERVICE_ORCHESTRATOR_PORT};
+        }
+
+        location = /api/audio {
+            rewrite /api/audio/(.*) /download/$1 break;
+            limit_req zone=all_services burst=5 nodelay;
+            proxy_pass http://google-drive-service:${GOOGLE_DRIVE_SERVICE_PORT};
         }
 
         location = /api/add-card {
