@@ -33,7 +33,7 @@ def create_file(file: schemas.FileCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/files/{file_id}", response_model=schemas.File)
-def get_file(file_id: int, db: Session = Depends(get_db)):
+def get_file(file_id: str, db: Session = Depends(get_db)):
     db_file = db.query(models.File).filter(models.File.file_id == file_id).first()
     if db_file is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
@@ -47,7 +47,7 @@ def get_all_files(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 
 
 @app.put("/files/{file_id}", response_model=schemas.File)
-def update_file(file_id: int, file: schemas.FileUpdate, db: Session = Depends(get_db)):
+def update_file(file_id: str, file: schemas.FileUpdate, db: Session = Depends(get_db)):
     db_file = db.query(models.File).filter(models.File.file_id == file_id).first()
     if db_file is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
@@ -59,7 +59,7 @@ def update_file(file_id: int, file: schemas.FileUpdate, db: Session = Depends(ge
 
 
 @app.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_file(file_id: int, db: Session = Depends(get_db)):
+def delete_file(file_id: str, db: Session = Depends(get_db)):
     db_file = db.query(models.File).filter(models.File.file_id == file_id).first()
     if db_file is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")

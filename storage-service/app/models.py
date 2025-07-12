@@ -6,7 +6,7 @@ from app.database import Base
 class File(Base):
     __tablename__ = "files"
 
-    file_id = Column(Integer, primary_key=True, index=True)
+    file_id = Column(String, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     inserted_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 

@@ -281,7 +281,7 @@
                         </svg>
                         <div class="audio-controls">
                             <audio controls src="${audio.url}" style="width: 100%;"></audio>
-                            <div class="audio-info">Option ${index + 1} • ${audio.duration || '00:00'}</div>
+                            <div class="audio-info">${audio.speaker}</div>
                         </div>
                     </div>
                 `);
@@ -330,8 +330,7 @@
                 },
 
                 async preparePronunciation(text) {
-				    return [{ url: "sample.mp3" }, { url: "sample.wav" }]
-                    //return this.post(config.endpoints.preparePronunciation, { text });
+                    return this.post(config.endpoints.preparePronunciation, { query: text });
                 },
 
                 async generateAnswers(text) {

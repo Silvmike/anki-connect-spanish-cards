@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+yadisk[async]
+python-multipart
+httpx

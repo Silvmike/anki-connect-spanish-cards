@@ -35,7 +35,7 @@ def post_search_google_images(request: SearchRequest):
         'searchType': 'image',
         'num': IMAGE_SEARCH_MAX_RESULTS,
     }
-    print(str(params))
+
     response = requests.get(URL, params=params)
     response.raise_for_status()
 

@@ -25,26 +25,29 @@ def get_health():
     return "OK"
 
 
+class GenerateAudioRequest(BaseModel):
+    query: str
+    lang: str = "es"
+    speaker: str
+
+
 # Speakers:
 #
 # Craig Gutsy
+# Maja Ruoho
 # Barbora MacLean
 # Gilberto Mathias
 # Annmarie Nele
-# Maja Ruoho
 # Ana Florence
 
-@app.get("/generate")
-async def generate(
-        query: str = Query(..., description="Input text"),
-        lang: str = Query("es", description="Input language"),
-        speaker: str = Query("Maja Ruoho")):
+@app.post("/generate")
+async def generate(request: GenerateAudioRequest):
     audio_data = io.BytesIO()
     tts.tts_to_file(
-        text=query,
+        text=request.query,
         file_path=audio_data,
-        language=lang,
-        speaker=speaker
+        language=request.lang,
+        speaker=request.speaker
     )
 
     return StreamingResponse(audio_data, media_type="audio/wav")
