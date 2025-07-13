@@ -15,6 +15,7 @@ so after generating cards you can use it via any Anki client.
 # TODO
 
 - [x] Ask for a deck to put generated cards to
+- [ ] Add support for other source and target languages
 - [ ] Use external LLM to generate questions for QA multi-choice card
 - [ ] Avoid duplicates
 - [ ] Improve generated questions refining
