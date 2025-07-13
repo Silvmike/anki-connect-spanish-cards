@@ -6,6 +6,8 @@ It is a web-service allowing to generate language learning cards (Spanish to Rus
 3. A basic card and its reversed version with an image and spanish word on the front, and russian work on the back
 
 Which gives in total 4 anki cards generated.
+It calls Anki via Anki Connect to create new cards and to sync new card to AnkiWeb,
+so after generating cards you can use it via any Anki client.
 
 # Demo
 ![demo.gif](demo.gif)
