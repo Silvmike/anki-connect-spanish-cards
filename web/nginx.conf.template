@@ -79,6 +79,53 @@ http {
             proxy_pass http://llm-service:${LLM_SERVICE_PORT};
         }
 
+        location /disk/ {
+            # Strip /disk/ prefix before passing to Yandex
+            rewrite ^/disk/(.*) /$1 break;
+
+            proxy_pass https://downloader.disk.yandex.ru;
+
+            # Hide original Referer and set empty one
+            proxy_hide_header Referer;
+            proxy_set_header Referer "";
+            proxy_set_header Host downloader.disk.yandex.ru;
+
+            # Make sure Location headers in 30x redirects remain intact
+            proxy_redirect off;  # Disable automatic rewrite of Location headers
+
+            # Critical for chained redirects
+            proxy_intercept_errors on;
+            recursive_error_pages on;
+            error_page 301 302 307 = @handle_redirect;
+
+            # Standard proxy headers
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Optimizations for downloads
+            proxy_buffering off;
+            proxy_connect_timeout 60s;
+            proxy_read_timeout 300s;
+        }
+
+        location @handle_redirect {
+            # Resolve the redirect location
+            resolver 8.8.8.8;  # Google DNS, change if needed
+            set $redirect_url "$upstream_http_location";
+
+            # Proxy the request to the new location while keeping /disk/ prefix
+            proxy_pass $redirect_url;
+
+            # Maintain headers
+            proxy_set_header Host $proxy_host;
+            proxy_set_header Referer "";
+            proxy_hide_header Referer;
+
+            # Keep buffering off for downloads
+            proxy_buffering off;
+        }
+
         # Обработка ошибок
         error_page 404 /404.html;
         error_page 500 502 503 504 /50x.html;
