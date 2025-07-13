@@ -1,0 +1,12 @@
+[Unit]
+Description=Anki with AnkiConnect Autostart
+After=network.target
+
+[Service]
+User=silvmike
+WorkingDirectory=/home/silvmike
+ExecStart=xvfb-run /usr/local/bin/anki
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
