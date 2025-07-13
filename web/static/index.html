@@ -81,9 +81,36 @@
             margin-bottom: 10px;
             color: #495057;
         }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
     <div class="container-fluid form-container">
         <h1 class="text-center mb-4">Add language cards</h1>
         <form id="cardForm">
@@ -189,7 +216,8 @@
                 suggestedOptions: $('#suggestedOptions'),
                 addCardsBtn: $('#addCardsBtn'),
                 successModal: new bootstrap.Modal('#successModal'),
-                againBtn: $('#againBtn')
+                againBtn: $('#againBtn'),
+                loadingOverlay: $('#loading-overlay')
             };
 
             // State management
@@ -200,6 +228,15 @@
                 selectedAudio: null,
                 isFormValid: false
             };
+
+            // Loading overlay functions
+            function showLoading() {
+                elements.loadingOverlay.css('display', 'flex');
+            }
+
+            function hideLoading() {
+                elements.loadingOverlay.hide();
+            }
 
             // Form validation
             function validateForm() {
@@ -307,6 +344,7 @@
             // API service
             const apiService = {
                 async post(endpoint, data) {
+                    showLoading();
                     try {
                         const response = await $.ajax({
                             url: endpoint,
@@ -318,6 +356,8 @@
                     } catch (error) {
                         console.error('API error:', error);
                         throw error;
+                    } finally {
+                        hideLoading();
                     }
                 },
 
