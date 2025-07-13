@@ -73,6 +73,12 @@ http {
             proxy_pass http://anki-card-generator-service:${ANKI_GENERATOR_SERVICE_PORT};
         }
 
+        location = /api/get-decks {
+            rewrite /api/get-decks /decks break;
+            limit_req zone=all_services burst=5 nodelay;
+            proxy_pass http://anki-card-generator-service:${ANKI_GENERATOR_SERVICE_PORT};
+        }
+
         location = /api/generate-answers {
             rewrite /api/(.*) /$1 break;
             limit_req zone=all_services burst=5 nodelay;

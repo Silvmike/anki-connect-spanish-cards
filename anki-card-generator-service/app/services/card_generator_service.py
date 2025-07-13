@@ -15,7 +15,7 @@ class AllInOneCardGenerator(CardGenerator):
         answers = ["1"] + ["0"] * len(data.generated_options)
         
         return {
-            "deckName": "Test",
+            "deckName": data.deck_name,
             "modelName": "AllInOne (kprim, mc, sc)",
             "fields": {
                 "Question": data.target_lang_sentence,
@@ -28,7 +28,7 @@ class AllInOneCardGenerator(CardGenerator):
 class BasicAudioCardGenerator(CardGenerator):
     def create_note(self, data: CardRequest) -> Dict[str, Any]:
         return {
-            "deckName": "Test",
+            "deckName": data.deck_name,
             "modelName": "Basic",
             "fields": {
                 "Front": f"[sound:{data.audio_url}]",
@@ -39,7 +39,7 @@ class BasicAudioCardGenerator(CardGenerator):
 class BasicReversedCardGenerator(CardGenerator):
     def create_note(self, data: CardRequest) -> Dict[str, Any]:
         return {
-            "deckName": "Test",
+            "deckName": data.deck_name,
             "modelName": "Basic (and reversed card)",
             "fields": {
                 "Front": f"<img src=\"{data.image_url}\"/><br/>{data.source_lang_sentence}",

@@ -13,6 +13,16 @@ app = FastAPI()
 def get_anki_connect_service():
     return AnkiConnectService()
 
+@app.get("/decks")
+async def get_deck_names(anki_service: AnkiConnectService = Depends(get_anki_connect_service)):
+    try:
+        anki_service.sync()
+        return anki_service.get_deck_names()
+    except Exception as e:
+        stack_trace_string = traceback.format_exc()
+        logger.error(f"Error adding cards: {str(e)} {stack_trace_string}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/generate-cards")
 async def generate_cards(
     request: CardRequest,
@@ -20,8 +30,8 @@ async def generate_cards(
 ):
     try:
         # Check if deck exists, create if not
-        if "Test" not in anki_service.get_deck_names():
-            anki_service.create_deck("Test")
+        if request.deck_name not in anki_service.get_deck_names():
+            anki_service.create_deck(request.deck_name)
 
         # Check for required models
         available_models = anki_service.get_model_names()

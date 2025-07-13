@@ -15,7 +15,7 @@ class AudioClient:
             async with session.post(
                 url,
                 json={"query": query, "speaker": speaker},
-                timeout=30
+                timeout=60
             ) as response:
                 response.raise_for_status()
                 if response.content_type == 'audio/wav':

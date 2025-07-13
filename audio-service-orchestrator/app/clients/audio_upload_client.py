@@ -24,7 +24,7 @@ class AudioUploadClient:
             async with session.post(
                 url,
                 data=data,
-                timeout=30
+                timeout=60
             ) as response:
 
                 response.raise_for_status()

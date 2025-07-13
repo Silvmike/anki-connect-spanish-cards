@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 class CardRequest(BaseModel):
+    deck_name: str = Field(..., alias="deckName")
     source_lang_sentence: str = Field(..., alias="sourceLangSentence")
     target_lang_sentence: str = Field(..., alias="targetLangSentence")
     image_url: str = Field(..., alias="imageUrl")

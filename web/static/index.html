@@ -157,9 +157,30 @@
             </div>
 
             <div class="mb-3">
-                <button type="button" id="addCardsBtn" class="btn btn-success" disabled>Add cards</button>
+                <button type="button" id="openDeckModalBtn" class="btn btn-success" disabled>Add</button>
             </div>
         </form>
+    </div>
+
+    <!-- Deck Selection Modal -->
+    <div class="modal fade" id="deckModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Deck</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="deckList" class="list-group">
+                        <!-- Deck options will be populated here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeckBtn" class="btn btn-primary" disabled>Confirm</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Success Modal -->
@@ -191,7 +212,8 @@
                     searchImage: '/api/image-search',
                     preparePronunciation: '/api/prepare-pronunciation',
                     generateAnswers: '/api/generate-answers',
-                    addCards: '/api/add-card'
+                    addCards: '/api/add-card',
+                    getDecks: '/api/get-decks'
                 },
                 headers: {
                     'Content-Type': 'application/json',
@@ -214,7 +236,10 @@
                 audioOptionsContainer: $('#audioOptionsContainer'),
                 generateAnswersBtn: $('#generateAnswersBtn'),
                 suggestedOptions: $('#suggestedOptions'),
-                addCardsBtn: $('#addCardsBtn'),
+                openDeckModalBtn: $('#openDeckModalBtn'),
+                deckModal: new bootstrap.Modal('#deckModal'),
+                deckList: $('#deckList'),
+                confirmDeckBtn: $('#confirmDeckBtn'),
                 successModal: new bootstrap.Modal('#successModal'),
                 againBtn: $('#againBtn'),
                 loadingOverlay: $('#loading-overlay')
@@ -226,6 +251,7 @@
                 currentImageIndex: -1,
                 audioOptions: [],
                 selectedAudio: null,
+                selectedDeck: null,
                 isFormValid: false
             };
 
@@ -246,7 +272,7 @@
 
                 const isValid = word && translation && state.currentImageIndex >= 0 && state.selectedAudio && options;
                 state.isFormValid = isValid;
-                elements.addCardsBtn.prop('disabled', !isValid);
+                elements.openDeckModalBtn.prop('disabled', !isValid);
             }
 
             // Highlight invalid fields
@@ -343,14 +369,14 @@
 
             // API service
             const apiService = {
-                async post(endpoint, data) {
+                async get(endpoint) {
                     showLoading();
                     try {
                         const response = await $.ajax({
                             url: endpoint,
-                            type: 'POST',
-                            data: JSON.stringify(data),
-                            headers: config.headers
+                            type: 'GET',
+                            headers: config.headers,
+                            timeout: 30000
                         });
                         return response;
                     } catch (error) {
@@ -359,6 +385,29 @@
                     } finally {
                         hideLoading();
                     }
+                },
+
+                async post(endpoint, data) {
+                    showLoading();
+                    try {
+                        const response = await $.ajax({
+                            url: endpoint,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers: config.headers,
+                            timeout: 30000
+                        });
+                        return response;
+                    } catch (error) {
+                        console.error('API error:', error);
+                        throw error;
+                    } finally {
+                        hideLoading();
+                    }
+                },
+
+                async getDecks() {
+                    return this.get(config.endpoints.getDecks);
                 },
 
                 async translate(text) {
@@ -474,23 +523,51 @@
                 }
             });
 
-            // Add cards button
-            elements.addCardsBtn.on('click', async function() {
+            // Open Deck Modal button
+            elements.openDeckModalBtn.on('click', async function() {
                 if (!state.isFormValid) {
                     highlightInvalidFields();
                     return;
                 }
 
+                try {
+                    const decks = await apiService.getDecks();
+                    elements.deckList.empty();
+                    state.selectedDeck = null;
+                    elements.confirmDeckBtn.prop('disabled', true);
+
+                    decks.forEach(deckName => {
+                        const deckElement = $(`<a href="#" class="list-group-item list-group-item-action">${deckName}</a>`);
+                        deckElement.on('click', function(e) {
+                            e.preventDefault();
+                            state.selectedDeck = deckName;
+                            elements.deckList.find('.list-group-item').removeClass('active');
+                            $(this).addClass('active');
+                            elements.confirmDeckBtn.prop('disabled', false);
+                        });
+                        elements.deckList.append(deckElement);
+                    });
+
+                    elements.deckModal.show();
+                } catch (error) {
+                    alert('Failed to get decks. Please try again.');
+                }
+            });
+
+            // Confirm Deck (final add) button
+            elements.confirmDeckBtn.on('click', async function() {
                 const cardData = {
                     sourceLangSentence: elements.wordInput.val().trim(),
                     targetLangSentence: elements.translationInput.val().trim(),
                     imageUrl: state.images[state.currentImageIndex].url,
                     audioUrl: state.selectedAudio,
-                    generatedOptions: elements.suggestedOptions.val().trim().split('\n')
+                    generatedOptions: elements.suggestedOptions.val().trim().split('\n'),
+                    deckName: state.selectedDeck
                 };
 
                 try {
                     await apiService.addCards(cardData);
+                    elements.deckModal.hide();
                     elements.successModal.show();
                 } catch (error) {
                     alert('Failed to add cards. Please try again.');
@@ -512,13 +589,14 @@
                 elements.searchImageBtn.prop('disabled', true);
                 elements.preparePronunciationBtn.prop('disabled', true);
                 elements.generateAnswersBtn.prop('disabled', true);
-                elements.addCardsBtn.prop('disabled', true);
+                elements.openDeckModalBtn.prop('disabled', true);
 
                 // Reset state
                 state.images = [];
                 state.currentImageIndex = -1;
                 state.audioOptions = [];
                 state.selectedAudio = null;
+                state.selectedDeck = null;
                 state.isFormValid = false;
 
                 // Hide modal
