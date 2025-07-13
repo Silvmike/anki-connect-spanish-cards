@@ -68,8 +68,9 @@ http {
         }
 
         location = /api/add-card {
+            rewrite /api/add-card /generate-cards break;
             limit_req zone=all_services burst=5 nodelay;
-            proxy_pass http://1.2.3.7:8000;
+            proxy_pass http://anki-card-generator-service:${ANKI_GENERATOR_SERVICE_PORT};
         }
 
         location = /api/generate-answers {

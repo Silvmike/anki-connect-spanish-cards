@@ -442,11 +442,11 @@
                 }
 
                 const cardData = {
-                    word: elements.wordInput.val().trim(),
-                    translation: elements.translationInput.val().trim(),
+                    sourceLangSentence: elements.wordInput.val().trim(),
+                    targetLangSentence: elements.translationInput.val().trim(),
                     imageUrl: state.images[state.currentImageIndex].url,
                     audioUrl: state.selectedAudio,
-                    options: elements.suggestedOptions.val().trim().split('\n')
+                    generatedOptions: elements.suggestedOptions.val().trim().split('\n')
                 };
 
                 try {
