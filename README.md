@@ -20,6 +20,7 @@ so after generating cards you can use it via any Anki client.
 - [ ] Document obtaining tokens for different services required to run the system
 - [ ] Avoid duplicates
 - [ ] Improve generated questions refining
+- [ ] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
 
 # System requirements
 
