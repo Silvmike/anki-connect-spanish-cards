@@ -16,7 +16,8 @@ so after generating cards you can use it via any Anki client.
 
 - [x] Ask for a deck to put generated cards to
 - [ ] Add support for other source and target languages
-- [ ] Use external LLM to generate questions for QA multi-choice card
+- [x] Use external LLM to generate questions for QA multi-choice card
+- [ ] Document obtaining tokens for different services required to run the system
 - [ ] Avoid duplicates
 - [ ] Improve generated questions refining
 
@@ -24,14 +25,18 @@ so after generating cards you can use it via any Anki client.
 
 1. AnkiConnect plugin installed
 2. Docker and compose
-3. GPU with at least 12Gb VRAM
+3. GPU with at least 12Gb VRAM for Local LLM mode, and 6-8Gb VRAM for GigaChat mode
 
 # Running
 
 1. Run Anki with Anki Connect add-on enabled, make sure it uses port 8765
 2. Run the rest of the system with Docker Compose:
 ```bash 
-docker compose up
+docker compose -f docker-compose.local_llm.yaml up
+
+or
+
+docker compose -f docker-compose.gigachat.yaml up
 ```
 3. Wait for all service to become healthy (first run might take long)
 4. Open https://localhost:8443/

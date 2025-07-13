@@ -1,0 +1,6 @@
+POST localhost:8000/generate-answers
+Content-Type: application/json
+
+{
+  "input": "la luz"
+}

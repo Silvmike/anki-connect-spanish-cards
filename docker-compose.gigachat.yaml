@@ -1,0 +1,285 @@
+services:
+  # 1. PostgreSQL database with initialization
+  postgres:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123456}
+      POSTGRES_USER: ${DB_USER:-store}
+      POSTGRES_DB: ${DB_NAME:-storagedb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-store} -d ${DB_NAME:-storagedb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # 2. Storage service (Python app)
+  storage:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./storage-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-store}:${DB_PASSWORD:-test123456}@postgres:5432/${DB_NAME:-storagedb}
+      APP_PORT: ${STORAGE_PORT:-8000}
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${STORAGE_PORT:-8000}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+
+  # 3. Translation service (Python app)
+  translate-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./translate-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
+    restart: unless-stopped
+    networks:
+      - default
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TRANSLATE_SERVICE_PORT:-8003}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  yandex-disk-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./yandex-disk-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${AUDIO_UPLOAD_SERVICE_PORT:-8009}
+    restart: unless-stopped
+    networks:
+      - default
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${AUDIO_UPLOAD_SERVICE_PORT:-8009}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  anki-card-generator-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./anki-card-generator-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${ANKI_GENERATOR_SERVICE_PORT:-8010}
+      ANKI_CONNECT_URL: "http://host.docker.internal:8765"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${ANKI_GENERATOR_SERVICE_PORT:-8010}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  image-search-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./image-search-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+      IMAGE_SEARCH_MAX_RESULTS: ${IMAGE_SEARCH_MAX_RESULTS:-3}
+    restart: unless-stopped
+    networks:
+      - default
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${IMAGE_SEARCH_SERVICE_PORT:-8005}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  # 6. Audio service (Python app)
+  audio-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./audio-service
+    environment:
+      APP_PORT: ${AUDIO_SERVICE_PORT:-8002}
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${AUDIO_SERVICE_PORT:-8002}/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s  # Longer startup for GPU services
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  # 7. LLM service (Python app)
+  llm-service:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./gigachat-service
+    environment:
+      APP_PORT: ${LLM_SERVICE_PORT:-8006}
+    restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${LLM_SERVICE_PORT:-8006}/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  audio-service-orchestrator:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./audio-service-orchestrator
+    depends_on:
+      audio-service:
+        condition: service_healthy
+      yandex-disk-service:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${AUDIO_SERVICE_ORCHESTRATOR_PORT:-8008}
+      AUDIO_SERVICE_HOST: audio-service
+      AUDIO_SERVICE_PORT: ${AUDIO_SERVICE_PORT:-8002}
+      AUDIO_UPLOAD_SERVICE_HOST: yandex-disk-service
+      AUDIO_UPLOAD_SERVICE_PORT: ${AUDIO_UPLOAD_SERVICE_PORT:-8009}
+    restart: unless-stopped
+    networks:
+      - default
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${AUDIO_SERVICE_ORCHESTRATOR_PORT:-8008}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  # 3. Nginx service
+  nginx:
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+      - ${LOCAL_DNS}
+    build:
+      context: ./web
+      args:
+        AUTH_USERNAME: ${NGINX_USER_NAME}
+        AUTH_PASSWORD: ${NGINX_PASSWORD}
+    depends_on:
+      storage:
+        condition: service_healthy
+      image-search-service:
+        condition: service_healthy
+      llm-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      audio-service-orchestrator:
+        condition: service_healthy
+      translate-service:
+        condition: service_healthy
+    environment:
+      NGINX_HOST: ${NGINX_HOST:-localhost}
+      NGINX_PORT: ${NGINX_PORT:-8443}
+      IMAGE_SEARCH_SERVICE_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
+      TRANSLATE_SERVICE_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
+      AUDIO_SERVICE_ORCHESTRATOR_PORT: ${AUDIO_SERVICE_ORCHESTRATOR_PORT:-8008}
+      LLM_SERVICE_PORT: ${LLM_SERVICE_PORT:-8006}
+      ANKI_GENERATOR_SERVICE_PORT: ${ANKI_GENERATOR_SERVICE_PORT:-8010}
+    ports:
+      - "${NGINX_PORT:-8443}:${NGINX_PORT:-8443}"
+    restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${POSTGRES_DATA_DIR:-./postgres_data}
+  file_storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${FILE_STORAGE_DIR:-./file_storage}
+
+networks:
+  backend:
+    internal: true
+  frontend:
