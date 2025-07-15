@@ -47,7 +47,7 @@ or
 
 docker compose -f docker-compose.gigachat.gtts.yaml up
 ```
-3. Wait for all service to become healthy (first run might take long)
+3. Wait for all service to become healthy (first run might take long if you choose to use locally hosted LLM and TTS model)
 4. Open https://localhost:8443/
 5. Default user is **admin**, default password is **admin**
 
