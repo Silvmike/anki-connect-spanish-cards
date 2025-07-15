@@ -19,8 +19,7 @@ so after generating cards you can use it via any Anki client.
 - [x] Use external LLM to generate questions for QA multi-choice card
 - [ ] Document obtaining tokens for different services required to run the system
 - [ ] Avoid duplicates
-- [ ] Improve generated questions refining
-- [ ] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
+- [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
 
 # System requirements
 
@@ -37,7 +36,15 @@ docker compose -f docker-compose.local_llm.yaml up
 
 or
 
+docker compose -f docker-compose.local_llm.gtts.yaml up
+
+or
+
 docker compose -f docker-compose.gigachat.yaml up
+
+or
+
+docker compose -f docker-compose.gigachat.gtts.yaml up
 ```
 3. Wait for all service to become healthy (first run might take long)
 4. Open https://localhost:8443/
@@ -69,7 +76,13 @@ sudo apt-get install -y xvfb
 - use a [template](./anki-lang-cards.service)
 - register a new service: 
 ```bash
-  sudo cp anki-lang-cards.service /etc/systemd/system/
+  sudo cp anki-lang-cards.gigachat.gtts.service /etc/systemd/system/anki-lang-cards.service
+#  or
+#  sudo cp anki-lang-cards.local_llm.gtts.service /etc/systemd/system/anki-lang-cards.service
+#  or
+#  sudo cp anki-lang-cards.gigachat.service /etc/systemd/system/anki-lang-cards.service
+#  or
+#  sudo cp anki-lang-cards.local_llm.service /etc/systemd/system/anki-lang-cards.service
   # register a service
   sudo systemctl enable anki-lang-cards.service
   # start the service

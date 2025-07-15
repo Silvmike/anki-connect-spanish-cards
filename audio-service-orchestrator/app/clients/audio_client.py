@@ -9,7 +9,7 @@ class AudioClient:
         self.base_url = base_url
         self.logger = logging.getLogger(__name__)
 
-    async def generate_audio(self, session: ClientSession, query: str, speaker: str) -> Optional[bytes]:
+    async def generate_audio(self, session: ClientSession, query: str, speaker: str):
         url = f"{self.base_url}generate"
         try:
             async with session.post(
@@ -18,8 +18,8 @@ class AudioClient:
                 timeout=60
             ) as response:
                 response.raise_for_status()
-                if response.content_type == 'audio/wav':
-                    return await response.read()
+                if response.content_type == 'audio/wav' or response.content_type == 'audio/mpeg':
+                    return response.content_type, await response.read()
                 self.logger.error(f"Unexpected content type: {response.content_type}")
                 return None
         except Exception as e:

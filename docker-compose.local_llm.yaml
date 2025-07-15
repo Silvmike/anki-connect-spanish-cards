@@ -227,6 +227,7 @@ services:
       AUDIO_SERVICE_PORT: ${AUDIO_SERVICE_PORT:-8002}
       AUDIO_UPLOAD_SERVICE_HOST: yandex-disk-service
       AUDIO_UPLOAD_SERVICE_PORT: ${AUDIO_UPLOAD_SERVICE_PORT:-8009}
+      GEN_MODE: coqui-tts
     restart: unless-stopped
     networks:
       - default
@@ -250,13 +251,9 @@ services:
         AUTH_USERNAME: ${NGINX_USER_NAME}
         AUTH_PASSWORD: ${NGINX_PASSWORD}
     depends_on:
-      storage:
-        condition: service_healthy
       image-search-service:
         condition: service_healthy
       llm-service:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
       audio-service-orchestrator:
         condition: service_healthy

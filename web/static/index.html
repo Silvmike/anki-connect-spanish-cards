@@ -441,10 +441,7 @@
 
                 try {
                     const translation = await apiService.translate(word);
-                    elements.translationInput.val(
-                        "Translation: " + translation.text +
-                        "\nPronunciation: " + translation.pronunciation
-                    ).prop('disabled', false);
+                    elements.translationInput.val(translation.text).prop('disabled', false);
                     elements.searchImageBtn.prop('disabled', false);
                     elements.preparePronunciationBtn.prop('disabled', false);
                     validateForm();

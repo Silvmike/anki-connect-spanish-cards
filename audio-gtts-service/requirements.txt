@@ -1,0 +1,4 @@
+gTTS
+uvicorn
+fastapi
+pydantic

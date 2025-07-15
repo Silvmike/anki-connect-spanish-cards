@@ -10,7 +10,12 @@ class AudioUploadClient:
         self.base_url = base_url
         self.logger = logging.getLogger(__name__)
 
-    async def upload_file(self, session: ClientSession, file_name: str, file_content: bytes) -> Optional[Dict]:
+    async def upload_file(
+        self, session: ClientSession,
+        file_name: str,
+        file_content: bytes,
+        content_type: str = 'audio/wav') -> Optional[Dict]:
+
         url = f"{self.base_url}upload"
         try:
             data = FormData()
@@ -18,7 +23,7 @@ class AudioUploadClient:
                 'file',
                 file_content,
                 filename=file_name,
-                content_type='audio/wav'
+                content_type=content_type
             )
 
             async with session.post(
