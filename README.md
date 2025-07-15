@@ -15,11 +15,12 @@ so after generating cards you can use it via any Anki client.
 # TODO
 
 - [x] Ask for a deck to put generated cards to
-- [ ] Add support for other source and target languages
 - [x] Use external LLM to generate questions for QA multi-choice card
-- [ ] Document obtaining tokens for different services required to run the system
-- [ ] Avoid duplicates
 - [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
+- [ ] Add support for other source and target languages
+- [ ] Document obtaining tokens for different services required to run the system
+- [ ] Document environment variables
+- [ ] Avoid duplicates (use storage service)
 
 # System requirements
 
