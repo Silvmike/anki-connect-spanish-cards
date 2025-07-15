@@ -48,6 +48,11 @@ docker compose -f docker-compose.gigachat.gtts.yaml up
 ```
 3. Wait for all service to become healthy (first run might take long)
 4. Open https://localhost:8443/
+5. Default user is **admin**, default password is **admin**
+
+## Changing password
+
+Edit [.env](./.env) file changing variables **NGINX_USER_NAME**, and **NGINX_PASSWORD**.
 
 ## Running Anki as a background service
 
