@@ -9,21 +9,24 @@ Which gives in total 4 anki cards generated.
 It calls Anki via Anki Connect to create new cards and to sync new card to AnkiWeb,
 so after generating cards you can use it via any Anki client.
 
+All audio files are stored in a personal Yandex Disk, and served from there, giving the opportunity to create lots of quality flashcards.
+
 # Demo
 ![demo.gif](demo.gif)
 
 # TODO
 
 - [x] Ask for a deck to put generated cards to
-- [ ] Add support for other source and target languages
 - [x] Use external LLM to generate questions for QA multi-choice card
-- [ ] Document obtaining tokens for different services required to run the system
-- [ ] Avoid duplicates
 - [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
 - [x] Store media files in Anki, not on Yandex Disk
 - [ ] Add another card type: filling gaps (when it is a statement, not a word)
 - [ ] Add image resize option to optimize storage
 - [ ] Add option to avoid saving sound recordings from gTTS on YandexDisk
+- [ ] Add support for other source and target languages
+- [ ] Document obtaining tokens for different services required to run the system
+- [ ] Document environment variables
+- [ ] Avoid duplicates (use storage service)
 
 # System requirements
 
@@ -50,8 +53,13 @@ or
 
 docker compose -f docker-compose.gigachat.gtts.yaml up
 ```
-3. Wait for all service to become healthy (first run might take long)
+3. Wait for all service to become healthy (first run might take long if you choose to use locally hosted LLM and TTS model)
 4. Open https://localhost:8443/
+5. Default user is **admin**, default password is **admin**
+
+## Changing password
+
+Edit [.env](./.env) file changing variables **NGINX_USER_NAME**, and **NGINX_PASSWORD**.
 
 ## Running Anki as a background service
 
