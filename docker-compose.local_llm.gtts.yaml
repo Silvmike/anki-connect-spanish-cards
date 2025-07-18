@@ -106,6 +106,7 @@ services:
     environment:
       APP_PORT: ${ANKI_GENERATOR_SERVICE_PORT:-8010}
       ANKI_CONNECT_URL: "http://host.docker.internal:8765"
+      STORAGE_MODE: ${STORAGE_MODE:-ANKI}
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -256,6 +257,7 @@ services:
       LLM_SERVICE_PORT: ${LLM_SERVICE_PORT:-8006}
       ANKI_GENERATOR_SERVICE_PORT: ${ANKI_GENERATOR_SERVICE_PORT:-8010}
     ports:
+      - "${NGINX_PORT:-8443}:${NGINX_PORT:-8443}"
       - "${NGINX_PORT:-8443}:${NGINX_PORT:-8443}"
     restart: unless-stopped
     networks:

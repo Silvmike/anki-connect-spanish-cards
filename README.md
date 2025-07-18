@@ -20,6 +20,10 @@ so after generating cards you can use it via any Anki client.
 - [ ] Document obtaining tokens for different services required to run the system
 - [ ] Avoid duplicates
 - [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
+- [x] Store media files in Anki, not on Yandex Disk
+- [ ] Add another card type: filling gaps (when it is a statement, not a word)
+- [ ] Add image resize option to optimize storage
+- [ ] Add option to avoid saving sound recordings from gTTS on YandexDisk
 
 # System requirements
 

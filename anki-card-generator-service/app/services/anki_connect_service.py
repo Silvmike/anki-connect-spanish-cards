@@ -32,3 +32,6 @@ class AnkiConnectService:
 
     def create_deck(self, deck: str) -> int:
         return self._invoke("createDeck", deck=deck)
+
+    def store_media_file_from_url(self, filename: str, url: str) -> str:
+        return self._invoke("storeMediaFile", filename=filename, url=url)

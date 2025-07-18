@@ -13,6 +13,7 @@ COPY ./app /app/app
 
 ENV APP_PORT=8000
 ENV ANKI_CONNECT_URL=http://host.docker.internal:8765
+ENV STORAGE_MODE=ANKI
 
 EXPOSE $APP_PORT
 

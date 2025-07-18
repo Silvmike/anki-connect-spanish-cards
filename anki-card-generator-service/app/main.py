@@ -43,7 +43,7 @@ async def generate_cards(
                     detail=f"Anki model '{model}' not found. Please ensure it is installed."
                 )
 
-        notes = card_factory.create_all_notes(request)
+        notes = card_factory.create_all_notes(request, anki_service)
         added_notes_ids = []
         for note in notes:
             note_id = anki_service.add_note(note)
