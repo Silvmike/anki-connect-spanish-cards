@@ -19,6 +19,18 @@ class CardGenerator(ABC):
     def available(self) -> bool:
         return True
 
+
+class ClozeDeletionGenerator(CardGenerator):
+    def create_note(self, data: CardRequest, anki_service: Optional[AnkiConnectService] = None) -> Dict[str, Any]:
+        return {
+            "deckName": data.deck_name,
+            "modelName": "Cloze",
+            "fields": {
+                "Text": data.cloze_sentence
+            }
+        }
+
+
 class AllInOneCardGenerator(CardGenerator):
     def create_note(self, data: CardRequest, anki_service: Optional[AnkiConnectService] = None) -> Dict[str, Any]:
         options = [data.source_lang_sentence] + data.generated_options
@@ -113,6 +125,7 @@ class CardFactory:
     def __init__(self):
         self._generators = {
             "all_in_one": AllInOneCardGenerator(),
+            "cloze": ClozeDeletionGenerator(),
             "basic_audio_anki": BasicAudioCardGeneratorAnki(),
             "basic_audio_url": BasicAudioCardGeneratorUrl(),
             "basic_reversed_anki": BasicReversedCardGeneratorAnki(),

@@ -8,3 +8,4 @@ class CardRequest(BaseModel):
     image_url: str = Field(..., alias="imageUrl")
     audio_url: str = Field(..., alias="audioUrl")
     generated_options: List[str] = Field(..., alias="generatedOptions")
+    cloze_sentence: str = Field(..., alias="clozeSentence")

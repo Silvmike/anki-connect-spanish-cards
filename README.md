@@ -20,7 +20,7 @@ All audio files are stored in a personal Yandex Disk, and served from there, giv
 - [x] Use external LLM to generate questions for QA multi-choice card
 - [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
 - [x] Store media files in Anki, not on Yandex Disk
-- [ ] Add another card type: filling gaps (when it is a statement, not a word)
+- [x] Add another card type: cloze deletion
 - [ ] Add image resize option to optimize storage
 - [ ] Add option to avoid saving sound recordings from gTTS on YandexDisk
 - [ ] Add support for other source and target languages

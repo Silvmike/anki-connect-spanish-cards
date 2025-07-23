@@ -68,7 +68,7 @@ def generate_cloze_deletion(phrase, translation):
                 role=MessagesRole.SYSTEM,
                 content="You're a smart assistant creating the best educational materials for language learners. "
                         "Make up a [cloze deletion] card for Anki from input [phrase]. "
-                        "Example for 'a la derecha': a {{c1:la}} {{c2:derecha}}. "
+                        "Example for 'a la derecha': a {{c1::la}} {{c2::derecha}}. "
                         "Do not generate unnecessary tokens, they cost user money."
             ),
             Messages(
