@@ -157,6 +157,14 @@
             </div>
 
             <div class="mb-3">
+                <button type="button" id="generateClozeBtn" class="btn btn-primary">Generate Cloze</button>
+            </div>
+            <div class="mb-3">
+                <label for="clozeOutput" class="form-label">Generated cloze card</label>
+                <textarea class="form-control" id="clozeOutput" rows="2" disabled></textarea>
+            </div>
+
+            <div class="mb-3">
                 <button type="button" id="openDeckModalBtn" class="btn btn-success" disabled>Add</button>
             </div>
         </form>
@@ -213,7 +221,8 @@
                     preparePronunciation: '/api/prepare-pronunciation',
                     generateAnswers: '/api/generate-answers',
                     addCards: '/api/add-card',
-                    getDecks: '/api/get-decks'
+                    getDecks: '/api/get-decks',
+                    generateCloze: '/cloze_deletion'
                 },
                 headers: {
                     'Content-Type': 'application/json',
@@ -242,7 +251,9 @@
                 confirmDeckBtn: $('#confirmDeckBtn'),
                 successModal: new bootstrap.Modal('#successModal'),
                 againBtn: $('#againBtn'),
-                loadingOverlay: $('#loading-overlay')
+                loadingOverlay: $('#loading-overlay'),
+                generateClozeBtn: $('#generateClozeBtn'),
+                clozeOutput: $('#clozeOutput')
             };
 
             // State management
@@ -426,6 +437,10 @@
                     return this.post(config.endpoints.generateAnswers, { input: text });
                 },
 
+                async generateCloze(text) {
+                    return this.post(config.endpoints.generateCloze, { input: text });
+                },
+
                 async addCards(data) {
                     return this.post(config.endpoints.addCards, data);
                 }
@@ -520,6 +535,22 @@
                 }
             });
 
+            // Generate cloze button
+            elements.generateClozeBtn.on('click', async function() {
+                const phrase = elements.wordInput.val().trim();
+                if (!phrase) {
+                    elements.wordInput.addClass('invalid');
+                    return;
+                }
+
+                try {
+                    const result = await apiService.generateCloze(phrase);
+                    elements.clozeOutput.val(result.cloze).prop('disabled', false);
+                } catch (error) {
+                    alert('Cloze generation failed. Please try again.');
+                }
+            });
+
             // Open Deck Modal button
             elements.openDeckModalBtn.on('click', async function() {
                 if (!state.isFormValid) {
@@ -559,7 +590,8 @@
                     imageUrl: state.images[state.currentImageIndex].url,
                     audioUrl: state.selectedAudio,
                     generatedOptions: elements.suggestedOptions.val().trim().split('\n'),
-                    deckName: state.selectedDeck
+                    deckName: state.selectedDeck,
+                    clozeSentence: elements.clozeOutput.val().trim()
                 };
 
                 try {
@@ -581,6 +613,7 @@
                 elements.audioSelection.addClass('d-none');
                 elements.audioOptionsContainer.empty();
                 elements.suggestedOptions.val('').prop('disabled', true).removeClass('invalid');
+                elements.clozeOutput.val('').prop('disabled', true);
 
                 // Reset buttons
                 elements.searchImageBtn.prop('disabled', true);
