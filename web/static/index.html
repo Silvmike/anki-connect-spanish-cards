@@ -222,7 +222,7 @@
                     generateAnswers: '/api/generate-answers',
                     addCards: '/api/add-card',
                     getDecks: '/api/get-decks',
-                    generateCloze: '/cloze_deletion'
+                    generateCloze: '/api/cloze-deletion'
                 },
                 headers: {
                     'Content-Type': 'application/json',
@@ -437,8 +437,8 @@
                     return this.post(config.endpoints.generateAnswers, { input: text });
                 },
 
-                async generateCloze(text) {
-                    return this.post(config.endpoints.generateCloze, { input: text });
+                async generateCloze(text, translation) {
+                    return this.post(config.endpoints.generateCloze, { input: text, translation: translation });
                 },
 
                 async addCards(data) {
@@ -543,9 +543,11 @@
                     return;
                 }
 
+                const translation = elements.translationInput.val().trim()
+
                 try {
-                    const result = await apiService.generateCloze(phrase);
-                    elements.clozeOutput.val(result.cloze).prop('disabled', false);
+                    const result = await apiService.generateCloze(phrase, translation);
+                    elements.clozeOutput.val(result).prop('disabled', false);
                 } catch (error) {
                     alert('Cloze generation failed. Please try again.');
                 }
