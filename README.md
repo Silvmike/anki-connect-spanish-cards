@@ -27,12 +27,13 @@ All audio files are stored in a personal Yandex Disk, and served from there, giv
 - [ ] Document obtaining tokens for different services required to run the system
 - [ ] Document environment variables
 - [ ] Avoid duplicates (use storage service)
+- [ ] Add support for DeepSeek
 
 # System requirements
 
 1. AnkiConnect plugin installed
 2. Docker and compose
-3. GPU with at least 12Gb VRAM for Local LLM mode, and 6-8Gb VRAM for GigaChat mode
+3. No GPU required for **docker-compose.gigachat.gtts.yaml**
 
 # Running
 
