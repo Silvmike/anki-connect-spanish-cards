@@ -9,7 +9,7 @@ RemainAfterExit=yes
 WorkingDirectory=/home/silvmike/PycharmProjects/AnkiLangCards
 ExecStart=/usr/bin/docker compose -f docker-compose.gigachat.gtts.yaml up -d
 ExecStop=/usr/bin/docker compose -f docker-compose.gigachat.gtts.yaml down
-ExecReload=/usr/bin/docker compose -f docker-compose.gigachat.gtts.yaml pull && /usr/bin/docker compose -f docker-compose.gigachat.gtts.yml up --force-recreate
+ExecReload=/usr/bin/docker compose -f docker-compose.gigachat.gtts.yaml pull && /usr/bin/docker compose -f docker-compose.gigachat.gtts.yaml up --force-recreate
 
 [Install]
 WantedBy=multi-user.target

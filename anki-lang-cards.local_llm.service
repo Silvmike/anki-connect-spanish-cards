@@ -9,7 +9,7 @@ RemainAfterExit=yes
 WorkingDirectory=/home/silvmike/PycharmProjects/AnkiLangCards
 ExecStart=/usr/bin/docker compose -f docker-compose.local_llm.yaml up -d
 ExecStop=/usr/bin/docker compose -f docker-compose.local_llm.yaml down
-ExecReload=/usr/bin/docker compose -f docker-compose.local_llm.yaml pull && /usr/bin/docker compose -f docker-compose.local_llm.yml up --force-recreate
+ExecReload=/usr/bin/docker compose -f docker-compose.local_llm.yaml pull && /usr/bin/docker compose -f docker-compose.local_llm.yaml up --force-recreate
 
 [Install]
 WantedBy=multi-user.target

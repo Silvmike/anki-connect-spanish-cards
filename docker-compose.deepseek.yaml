@@ -172,7 +172,7 @@ services:
       - 4.4.4.4
       - ${LOCAL_DNS}
     build:
-      context: ./gigachat-service
+      context: ./deepseek-service
     environment:
       APP_PORT: ${LLM_SERVICE_PORT:-8006}
     restart: unless-stopped

@@ -9,7 +9,7 @@ RemainAfterExit=yes
 WorkingDirectory=/home/silvmike/PycharmProjects/AnkiLangCards
 ExecStart=/usr/bin/docker compose -f docker-compose.gigachat.yaml up -d
 ExecStop=/usr/bin/docker compose -f docker-compose.gigachat.yaml down
-ExecReload=/usr/bin/docker compose -f docker-compose.gigachat.yaml pull && /usr/bin/docker compose -f docker-compose.gigachat.yml up --force-recreate
+ExecReload=/usr/bin/docker compose -f docker-compose.gigachat.yaml pull && /usr/bin/docker compose -f docker-compose.gigachat.yaml up --force-recreate
 
 [Install]
 WantedBy=multi-user.target

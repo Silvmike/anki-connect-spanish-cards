@@ -9,8 +9,14 @@ import time
 from gigachat import GigaChat
 from gigachat.models import Chat, Messages, MessagesRole
 
-with open('.api_key', 'r') as file:
-    API_KEY = file.read()
+try:
+    with open('.api_key', 'r') as file:
+        API_KEY = file.read().strip()
+except FileNotFoundError:
+    API_KEY = os.getenv("GIGACHAT_API_KEY")
+
+if not API_KEY:
+    raise ValueError("GigaChat API key not found. Please create a .api_key file or set GIGACHAT_API_KEY environment variable.")
 
 APP_PORT = int(os.getenv("APP_PORT", default="8000"))
 

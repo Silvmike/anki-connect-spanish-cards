@@ -54,9 +54,6 @@ services:
       - ${LOCAL_DNS}
     build:
       context: ./translate-service
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       APP_PORT: ${TRANSLATE_SERVICE_PORT:-8003}
     restart: unless-stopped
@@ -77,9 +74,6 @@ services:
       - ${LOCAL_DNS}
     build:
       context: ./yandex-disk-service
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       APP_PORT: ${AUDIO_UPLOAD_SERVICE_PORT:-8009}
     restart: unless-stopped
@@ -100,9 +94,6 @@ services:
       - ${LOCAL_DNS}
     build:
       context: ./anki-card-generator-service
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       APP_PORT: ${ANKI_GENERATOR_SERVICE_PORT:-8010}
       ANKI_CONNECT_URL: "http://host.docker.internal:8765"
@@ -127,9 +118,6 @@ services:
       - ${LOCAL_DNS}
     build:
       context: ./image-search-service
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       APP_PORT: ${IMAGE_SEARCH_SERVICE_PORT:-8005}
       IMAGE_SEARCH_MAX_RESULTS: ${IMAGE_SEARCH_MAX_RESULTS:-3}

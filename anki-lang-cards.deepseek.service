@@ -1,0 +1,15 @@
+[Unit]
+Description=Your Docker Compose Application
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/silvmike/PycharmProjects/AnkiLangCards
+ExecStart=/usr/bin/docker compose -f docker-compose.deepseek.yaml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.deepseek.yaml down
+ExecReload=/usr/bin/docker compose -f docker-compose.deepseek.yaml pull && /usr/bin/docker compose -f docker-compose.deepseek.yaml up --force-recreate
+
+[Install]
+WantedBy=multi-user.target

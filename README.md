@@ -21,13 +21,14 @@ All audio files are stored in a personal Yandex Disk, and served from there, giv
 - [x] Use https://github.com/pndurette/gTTS library and provide option to generate diffeent voices locally or use Google Translate TTS feature
 - [x] Store media files in Anki, not on Yandex Disk
 - [x] Add another card type: cloze deletion
+- [x] Add support for DeepSeek
+- [x] (fix) improved startup time by avoiding unnecessary dependencies
+- [ ] Add support for other source and target languages
 - [ ] Add image resize option to optimize storage
 - [ ] Add option to avoid saving sound recordings from gTTS on YandexDisk
-- [ ] Add support for other source and target languages
 - [ ] Document obtaining tokens for different services required to run the system
 - [ ] Document environment variables
 - [ ] Avoid duplicates (use storage service)
-- [ ] Add support for DeepSeek
 
 # System requirements
 
