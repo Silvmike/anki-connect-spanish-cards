@@ -41,19 +41,18 @@ All audio files are stored in a personal Yandex Disk, and served from there, giv
 1. Run Anki with Anki Connect add-on enabled, make sure it uses port 8765
 2. Run the rest of the system with Docker Compose:
 ```bash 
-docker compose -f docker-compose.local_llm.yaml up
-
-or
-
-docker compose -f docker-compose.local_llm.gtts.yaml up
-
-or
-
-docker compose -f docker-compose.gigachat.yaml up
-
-or
-
+# giga-chat for card generation (the fastest option)
 docker compose -f docker-compose.gigachat.gtts.yaml up
+
+or
+
+# deepseek for card generation
+docker compose -f docker-compose.deepseek.gtts.yaml up
+
+or
+
+# everything local
+docker compose -f docker-compose.local_llm.yaml up
 ```
 3. Wait for all service to become healthy (first run might take long if you choose to use locally hosted LLM and TTS model)
 4. Open https://localhost:8443/
@@ -91,6 +90,8 @@ sudo apt-get install -y xvfb
 - register a new service: 
 ```bash
   sudo cp anki-lang-cards.gigachat.gtts.service /etc/systemd/system/anki-lang-cards.service
+#  or
+#  sudo cp docker-compose.deepseek.gtts.yaml /etc/systemd/system/anki-lang-cards.service
 #  or
 #  sudo cp anki-lang-cards.local_llm.gtts.service /etc/systemd/system/anki-lang-cards.service
 #  or
